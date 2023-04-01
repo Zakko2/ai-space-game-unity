@@ -57,9 +57,6 @@ public class Bullet : MonoBehaviour
 
             if (asteroidScript != null)
             {
-                // Call the Split method from the Asteroid script
-                asteroidScript.Split();
-
                 // Destroy the asteroid and the bullet
                 Destroy(other.gameObject);
                 Destroy(gameObject);
@@ -70,4 +67,5 @@ public class Bullet : MonoBehaviour
             }
         }
     }
+
 }

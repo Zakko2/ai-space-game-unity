@@ -15,11 +15,11 @@ public class Asteroids : MonoBehaviour
     public Canvas canvas;
 
     public List<GameObject> asteroids;
-    public List<Vector2> velocities;  // Store the velocities for each asteroid
+    public Dictionary<GameObject, Vector2> asteroidVelocities; // Replace the List<GameObject> and List<Vector2>
 
     void Start()
     {
-        asteroids = new List<GameObject>();
+        asteroidVelocities = new Dictionary<GameObject, Vector2>(); // Initialize the dictionary
         CreateAsteroidBelt();
         Debug.Log("Ran start routine");
     }
@@ -90,7 +90,7 @@ public class Asteroids : MonoBehaviour
             {
                 velocity = new Vector2(Random.Range(-asteroidSpeed, asteroidSpeed), Random.Range(-asteroidSpeed, asteroidSpeed));
             } while (velocity == Vector2.zero);
-            asteroid.GetComponent<Asteroid>().velocity = velocity;  // Set the velocity directly in the Asteroid component
+            asteroidVelocities.Add(asteroid, velocity); // Add the asteroid and its velocity to the dictionary
         }
     }
 
@@ -200,12 +200,19 @@ public class Asteroids : MonoBehaviour
         float topBound = mainCamera.transform.position.y + halfHeight;
         float bottomBound = mainCamera.transform.position.y - halfHeight;
 
-        for (int i = 0; i < asteroids.Count; i++)
-        {
-            GameObject asteroid = asteroids[i];
-            Asteroid asteroidScript = asteroid.GetComponent<Asteroid>();
-            Vector2 velocity = asteroidScript.velocity; // Get the velocity from the Asteroid component
+        List<GameObject> asteroidsToBeRemoved = new List<GameObject>();
 
+        foreach (KeyValuePair<GameObject, Vector2> entry in asteroidVelocities)
+        {
+            GameObject asteroid = entry.Key;
+
+            if (asteroid == null)
+            {
+                asteroidsToBeRemoved.Add(asteroid);
+                continue;
+            }
+
+            Vector2 velocity = entry.Value;
 
             // Update the position based on the velocity
             asteroid.transform.position += (Vector3)velocity * Time.deltaTime;
@@ -241,5 +248,11 @@ public class Asteroids : MonoBehaviour
             }
             asteroid.transform.position = pos;
         }
+
+        foreach (GameObject asteroid in asteroidsToBeRemoved)
+        {
+            asteroidVelocities.Remove(asteroid);
+        }
     }
+
 }
