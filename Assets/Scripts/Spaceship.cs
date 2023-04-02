@@ -4,12 +4,10 @@ using UnityEngine;
 
 public class Spaceship : MonoBehaviour
 {
-    public float spaceshipSize = 1.0f;
     public float accelerationRate = 2.0f;
     public float maxAcceleration = 5.0f;
     public float turnSpeed = 100.0f;
     public float decelerationFactor = 2.0f;
-    public Material lineMaterial;
     public GameObject bulletPrefab;
     public float shootForce = 10f;
     public float bulletSpeed = 10f;
@@ -18,27 +16,6 @@ public class Spaceship : MonoBehaviour
 
     void Start()
     {
-        // Create a LineRenderer component to render the spaceship
-        LineRenderer lr = gameObject.AddComponent<LineRenderer>();
-        lr.useWorldSpace = false;
-        lr.loop = true;
-        lr.positionCount = 4; // 3 vertices + closing the loop
-        lr.startWidth = 0.015f;
-        lr.endWidth = 0.015f;
-        lr.material = lineMaterial;
-
-        // Define the vertices for the triangular spaceship
-        Vector3[] positions = new Vector3[4];
-        positions[0] = new Vector3(0.0f, spaceshipSize, 0.0f); // Top vertex
-        positions[1] = new Vector3(-spaceshipSize / 2, -spaceshipSize / 2, 0.0f); // Bottom-left vertex
-        positions[2] = new Vector3(spaceshipSize / 2, -spaceshipSize / 2, 0.0f); // Bottom-right vertex
-        positions[3] = positions[0]; // Close the loop
-
-        gameObject.transform.position = new Vector3(0, 0, 1); // Set the z position to 1
-
-        // Set the positions of the LineRenderer
-        lr.SetPositions(positions);
-
         rb = gameObject.AddComponent<Rigidbody2D>();
         rb.gravityScale = 0;
     }
@@ -119,11 +96,3 @@ void ScreenWrapping()
         }
     }
 }
-
-
-
-//Embark on the most electrifying space adventure of the century: Astro Blasters! Join Captain Starburn, the galaxy's bravest pilot, as he battles through a treacherous asteroid field to save his beloved planet, Galaxium Prime, and the enchanting space siren, Aurora Supernova. With the fate of the universe hanging in the balance, defeat the sinister Dark Nebula Armada and become the ultimate cosmic hero!
-
-//Experience edge-of-your-seat excitement as you navigate the deadly asteroid field, dodge colossal space rocks, and engage in intense laser battles against the relentless forces of the Dark Nebula Armada. Unleash your inner daredevil and prove that you have what it takes to save the day in this high-octane space epic.
-
-//Astro Blasters boasts state-of-the-art, awe-inspiring graphics that transport you to the far reaches of the cosmos. Get ready to groove to the synth-heavy soundtrack that'll have players' heads bopping as they navigate this thrilling cosmic rollercoaster. Astro Blasters is the out-of-this-world adventure that no gamer can afford to miss!
