@@ -13,9 +13,13 @@ public class Asteroid : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Bullet"))
         {
-            if (transform.localScale.x > 0.5f)
+            if (transform.localScale.x > 0.3f)
             {
-                Split(velocity); // Call the Split method to create smaller asteroids and pass the original velocity
+                // Get the original asteroid's velocity
+                Vector2 originalVelocity = asteroidManager.asteroidVelocities[gameObject];
+
+                // Call the Split method to create smaller asteroids
+                Split(originalVelocity);
             }
 
             // Remove this asteroid from the asteroidManager's lists
@@ -27,6 +31,7 @@ public class Asteroid : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
 
 
 
@@ -59,6 +64,4 @@ public class Asteroid : MonoBehaviour
             asteroidManager.asteroidVelocities.Remove(gameObject);
         }
     }
-
-
 }

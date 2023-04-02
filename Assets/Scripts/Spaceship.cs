@@ -119,3 +119,11 @@ void ScreenWrapping()
         }
     }
 }
+
+
+
+//Embark on the most electrifying space adventure of the century: Astro Blasters! Join Captain Starburn, the galaxy's bravest pilot, as he battles through a treacherous asteroid field to save his beloved planet, Galaxium Prime, and the enchanting space siren, Aurora Supernova. With the fate of the universe hanging in the balance, defeat the sinister Dark Nebula Armada and become the ultimate cosmic hero!
+
+//Experience edge-of-your-seat excitement as you navigate the deadly asteroid field, dodge colossal space rocks, and engage in intense laser battles against the relentless forces of the Dark Nebula Armada. Unleash your inner daredevil and prove that you have what it takes to save the day in this high-octane space epic.
+
+//Astro Blasters boasts state-of-the-art, awe-inspiring graphics that transport you to the far reaches of the cosmos. Get ready to groove to the synth-heavy soundtrack that'll have players' heads bopping as they navigate this thrilling cosmic rollercoaster. Astro Blasters is the out-of-this-world adventure that no gamer can afford to miss!

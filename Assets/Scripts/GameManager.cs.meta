@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: 7444c17ddd9a8584488dcd5cb968c9c8
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - shipUIPrefab: {fileID: 727511345756207533, guid: a5e445e07a7efaf449cc8a50714dffa0, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
