@@ -11,13 +11,16 @@ public class Spaceship : MonoBehaviour
     public GameObject bulletPrefab;
     public float shootForce = 10f;
     public float bulletSpeed = 10f;
+    public Asteroids asteroidManager; // Reference to the Asteroids script
+    public GameManager gameManager;    // Reference to the GameManager script
+    public ParticleSystem explosionEffect; // Reference to the Particle System for the explosion
 
+    private bool isExploding = false;
     private Rigidbody2D rb;
 
     void Start()
     {
-        rb = gameObject.AddComponent<Rigidbody2D>();
-        rb.gravityScale = 0;
+        rb = GetComponent<Rigidbody2D>();
     }
 
     void Update()
@@ -53,6 +56,23 @@ public class Spaceship : MonoBehaviour
         }
     }
 
+    public void DeactivateSpaceship()
+    {
+        // Disable spaceship controls, renderer, and collider
+        this.enabled = false;
+        GetComponent<Renderer>().enabled = false;
+        GetComponent<Collider2D>().enabled = false;
+    }
+
+    public void ReactivateSpaceship()
+    {
+        // Re-enable spaceship controls, renderer, and collider
+        this.enabled = true;
+        GetComponent<Renderer>().enabled = true;
+        GetComponent<Collider2D>().enabled = true;
+    }
+
+
     void Shoot()
     {
         // Calculate the offset for spawning the bullet in front of the spaceship
@@ -70,7 +90,82 @@ public class Spaceship : MonoBehaviour
     }
 
 
-void ScreenWrapping()
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        // Ignore collision if the spaceship is currently exploding
+        if (isExploding)
+            return;
+
+        // Check if the spaceship collided with an asteroid
+        if (other.gameObject.CompareTag("Asteroid"))
+        {
+            // Call the ExplodeAndRespawn method
+            StartCoroutine(ExplodeAndRespawn());
+        }
+    }
+
+    IEnumerator ExplodeAndRespawn()
+    {
+
+        // Check if the game is over, and if so, exit the coroutine early
+        if (gameManager.isGameOver)
+        {
+            yield break;
+        }
+
+        // Set isExploding to true to prevent multiple explosions
+        isExploding = true;
+
+        // Disable spaceship controls and renderer
+        this.enabled = false;
+        GetComponent<Renderer>().enabled = false;
+
+        // Get the spaceship's collider and disable it
+        Collider2D spaceshipCollider = GetComponent<Collider2D>();
+        spaceshipCollider.enabled = false; // Disable the collider
+
+        // Play the explosion effect
+        explosionEffect.transform.position = transform.position; // Set the position to match the player's ship
+        explosionEffect.Play();
+
+        // Call the LoseLife method from the GameManager script
+        gameManager.LoseLife();
+
+        // Wait for 1 second before respawning the player
+        yield return new WaitForSeconds(1f);
+
+        // Check again if the game is over before respawning
+        if (gameManager.isGameOver)
+        {
+            yield break;
+        }
+
+        // Stop the explosion effect
+        explosionEffect.Stop();
+
+        // Set the player's velocity to 0
+        rb.velocity = Vector2.zero;
+
+        // Respawn the player at the safest position
+        // Use the reference to asteroidManager to access the asteroids list
+        Vector3 safestPosition = FindSafestRespawnPosition(asteroidManager.asteroids);
+        transform.position = safestPosition;
+
+        // Re-enable spaceship controls and renderer
+        this.enabled = true;
+        GetComponent<Renderer>().enabled = true;
+
+        // Re-enable the spaceship's collider
+        spaceshipCollider.enabled = true; // Enable the collider
+
+        // Set isExploding back to false to allow for future explosions
+        isExploding = false;
+    }
+
+
+
+    void ScreenWrapping()
     {
         Vector3 viewportPosition = Camera.main.WorldToViewportPoint(transform.position);
         bool wrapHorizontal = false;
@@ -95,4 +190,56 @@ void ScreenWrapping()
             transform.position = newPosition;
         }
     }
+
+    public Vector3 FindSafestRespawnPosition(List<GameObject> asteroids)
+    {
+        // Get the camera's bounds in world space
+        Camera mainCamera = Camera.main;
+        float halfHeight = mainCamera.orthographicSize;
+        float halfWidth = mainCamera.aspect * halfHeight;
+        float leftBound = mainCamera.transform.position.x - halfWidth;
+        float rightBound = mainCamera.transform.position.x + halfWidth;
+        float topBound = mainCamera.transform.position.y + halfHeight;
+        float bottomBound = mainCamera.transform.position.y - halfHeight;
+
+        // Define a margin inside the screen bounds
+        float margin = 1.0f; // Adjust the margin value as needed
+
+        // Define the search area within the margin inside the screen bounds
+        float searchAreaLeftBound = leftBound + margin;
+        float searchAreaRightBound = rightBound - margin;
+        float searchAreaTopBound = topBound - margin;
+        float searchAreaBottomBound = bottomBound + margin;
+
+        // Initialize variables to keep track of the safest position and maximum distance
+        Vector3 safestPosition = Vector3.zero;
+        float maxDistance = float.MinValue;
+
+        // Iterate through possible respawn positions within the search area
+        for (float x = searchAreaLeftBound; x <= searchAreaRightBound; x += margin)
+        {
+            for (float y = searchAreaBottomBound; y <= searchAreaTopBound; y += margin)
+            {
+                // Calculate the minimum distance to all asteroids from the current position
+                Vector3 currentPosition = new Vector3(x, y, 0);
+                float minDistance = float.MaxValue;
+                foreach (GameObject asteroid in asteroids)
+                {
+                    float distance = Vector3.Distance(currentPosition, asteroid.transform.position);
+                    minDistance = Mathf.Min(minDistance, distance);
+                }
+
+                // Update the safest position if the current position has a greater minimum distance
+                if (minDistance > maxDistance)
+                {
+                    maxDistance = minDistance;
+                    safestPosition = currentPosition;
+                }
+            }
+        }
+
+        // Return the safest respawn position
+        return safestPosition;
+    }
+
 }

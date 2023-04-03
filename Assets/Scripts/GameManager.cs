@@ -1,58 +1,135 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public int startingLives = 3;
-    public GameObject shipUIPrefab;
-    public float shipUISpacing = 1f;
-    public Vector3 shipUIStartPosition = new Vector3(-7f, 4f, 0f);
+    public int pointsPerExtraLife = 10000;
+    public GameObject gameOverScreen; // Reference to the Game Over UI
+    public bool isGameOver = false;     // Boolean variable to track if the game is over
 
     private int currentLives;
-    private GameObject[] shipUIInstances;
+    private int currentScore;
+    private int nextExtraLifeThreshold;
+
+    [SerializeField]
     private RectTransform livesPanelTransform;
 
+    [SerializeField]
+    private TextMeshProUGUI livesText;
+
+    [SerializeField]
+    private TextMeshProUGUI scoreText;
+
+    [SerializeField]
+    private GameObject gameOverPanel;
+
+    [SerializeField]
+    private TextMeshProUGUI gameOverText;
+
+    
     void Start()
     {
         currentLives = startingLives;
-        livesPanelTransform = GameObject.Find("LivesPanel").GetComponent<RectTransform>();
-        CreateShipUILives();
+        UpdateLivesText();
+        currentScore = 0;
+        nextExtraLifeThreshold = pointsPerExtraLife; // Initialize the threshold for the first extra life
+        UpdateScoreText();
+        gameOverPanel.SetActive(false); // Hide the game over panel at start
     }
 
     public void LoseLife()
     {
+
         currentLives--;
-        UpdateShipUILives();
+        UpdateLivesText();
 
         if (currentLives <= 0)
         {
-            // Handle game over, e.g. show a game over screen or restart the level
-        }
-        else
-        {
-            // Reset the game state, e.g. move the player's ship and asteroids to their starting positions
-            // You can implement this in separate methods in the respective scripts and call them here
+            // Handle game over
+            GameOver();
         }
     }
 
-    private void CreateShipUILives()
+    private void GameOver()
     {
-        shipUIInstances = new GameObject[startingLives];
-
-        for (int i = 0; i < startingLives; i++)
+        isGameOver = true;
+        // Deactivate the spaceship when the game is over
+        Spaceship spaceship = FindObjectOfType<Spaceship>();
+        if (spaceship != null)
         {
-            GameObject shipUIInstance = Instantiate(shipUIPrefab, shipUIStartPosition + new Vector3(i * shipUISpacing, 0f, 0f), Quaternion.identity, livesPanelTransform);
-            shipUIInstances[i] = shipUIInstance;
+            spaceship.DeactivateSpaceship();
         }
+
+        // Show the game over message and ask the player if they want to try again
+        gameOverPanel.SetActive(true);
+        gameOverText.text = "Game Over\nWould you like to try again?";
     }
 
-    private void UpdateShipUILives()
+
+    public void OnTryAgainButton()
     {
-        if (currentLives >= 0 && currentLives < shipUIInstances.Length)
+        // Reactivate the spaceship before restarting the game
+        Spaceship spaceship = FindObjectOfType<Spaceship>();
+        if (spaceship != null)
         {
-            Destroy(shipUIInstances[currentLives]);
+            spaceship.ReactivateSpaceship();
+        }
+
+        // Get the reference to the Asteroids script
+        Asteroids asteroidManager = FindObjectOfType<Asteroids>();
+        if (asteroidManager != null)
+        {
+            // Clear all existing asteroids and initialize new ones
+            asteroidManager.ClearAllAsteroids();
+            asteroidManager.InitializeAsteroids();
+        }
+
+        // Reset the player's score and lives
+        currentScore = 0;
+        currentLives = 3;
+        UpdateScoreText();
+        UpdateLivesText();
+        // Restart the game (reload the current scene)
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+
+    public void OnQuitButton()
+    {
+        // Quit the game
+        Application.Quit();
+    }
+
+
+    private void UpdateLivesText()
+    {
+        livesText.text = "Lives: " + currentLives.ToString();
+    }
+
+    private void UpdateScoreText()
+    {
+        scoreText.text = "Score: " + currentScore.ToString();
+    }
+
+    public void AddScore(int points)
+    {
+        // Update the player's score and the UI
+        currentScore += points;
+        scoreText.text = $"Score: {currentScore}";
+
+        // Check if the player has reached the threshold for an extra life
+        if (currentScore >= nextExtraLifeThreshold)
+        {
+            // Award an extra life
+            currentLives++;
+            UpdateLivesText();
+
+            // Update the threshold for the next extra life
+            nextExtraLifeThreshold += pointsPerExtraLife;
         }
     }
 }

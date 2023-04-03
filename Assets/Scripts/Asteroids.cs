@@ -13,9 +13,11 @@ public class Asteroids : MonoBehaviour
     public Material lineMaterial;
     public LineRenderer asteroidLinePrefab;
     public Canvas canvas;
-
+    public GameObject explosionEffectPrefab;
     public List<GameObject> asteroids;
     public Dictionary<GameObject, Vector2> asteroidVelocities; // Replace the List<GameObject> and List<Vector2>
+
+    private int additionalAsteroids = 0;
 
     void Start()
     {
@@ -35,8 +37,35 @@ public class Asteroids : MonoBehaviour
             // Quit the game
             Application.Quit();
         }
+
+        // Call the method to check if all asteroids are destroyed and respawn if needed
+        CheckAndRespawnAsteroids();
+
     }
 
+    void CheckAndRespawnAsteroids()
+    {
+        // If there are no active asteroids and there are no asteroids waiting to be removed
+        if (asteroids.Count == 0 && asteroidVelocities.Count == 0)
+        {
+            StartCoroutine(RespawnAsteroidsAfterDelay());
+        }
+    }
+
+    IEnumerator RespawnAsteroidsAfterDelay()
+    {
+        // Wait for 3 seconds
+        yield return new WaitForSeconds(3f);
+
+        // Increase the number of asteroids to spawn
+        additionalAsteroids++;
+
+        // Update the numberOfAsteroids
+        numberOfAsteroids += additionalAsteroids;
+
+        // Call the CreateAsteroidBelt method to spawn new asteroids
+        CreateAsteroidBelt();
+    }
 
     void CreateAsteroidBelt()
     {
@@ -108,8 +137,11 @@ public class Asteroids : MonoBehaviour
 
         // Set the asteroidManager reference in the Asteroid script
         asteroidScript.asteroidManager = this;
-        asteroid.AddComponent<Rigidbody2D>().gravityScale = 0;
+        
+        asteroidScript.size = 3;
 
+        asteroid.AddComponent<Rigidbody2D>().gravityScale = 0;
+        asteroid.tag = "Asteroid";
 
         // Create the LineRenderer component on the asteroid GameObject
         LineRenderer lr = asteroid.AddComponent<LineRenderer>();
@@ -254,5 +286,25 @@ public class Asteroids : MonoBehaviour
             asteroidVelocities.Remove(asteroid);
         }
     }
+
+    public void ClearAllAsteroids()
+    {
+        // Loop through all asteroids and destroy them
+        foreach (GameObject asteroid in asteroids)
+        {
+            Destroy(asteroid);
+        }
+        // Clear the lists and dictionary
+        asteroids.Clear();
+        asteroidVelocities.Clear();
+        additionalAsteroids = 0;
+    }
+
+    public void InitializeAsteroids()
+    {
+        // Call the CreateAsteroidBelt method to spawn new asteroids
+        CreateAsteroidBelt();
+    }
+
 
 }

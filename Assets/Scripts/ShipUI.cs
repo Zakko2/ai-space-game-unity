@@ -9,8 +9,11 @@ public class ShipUI : MonoBehaviour
 
     void Start()
     {
-        // Create a LineRenderer component to render the spaceship
-        LineRenderer lr = gameObject.AddComponent<LineRenderer>();
+        Debug.Log("Line Material: " + lineMaterial);
+
+        // Get the existing LineRenderer component instead of adding a new one
+        LineRenderer lr = GetComponent<LineRenderer>();
+
         lr.useWorldSpace = false;
         lr.loop = true;
         lr.positionCount = 4; // 3 vertices + closing the loop
