@@ -13,14 +13,19 @@ public class Spaceship : MonoBehaviour
     public float bulletSpeed = 10f;
     public Asteroids asteroidManager; // Reference to the Asteroids script
     public GameManager gameManager;    // Reference to the GameManager script
-    public ParticleSystem explosionEffect; // Reference to the Particle System for the explosion
+    //public ParticleSystem explosionEffect; // Reference to the Particle System for the explosion
 
     private bool isExploding = false;
     private Rigidbody2D rb;
+    private AudioSource audioSource;
+
+    [SerializeField] private ParticleSystem spaceshipExplosionEffectPrefab;
+
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -53,6 +58,8 @@ public class Spaceship : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             Shoot();
+            // Play the shooting sound effect
+            audioSource.Play();
         }
     }
 
@@ -98,9 +105,15 @@ public class Spaceship : MonoBehaviour
             return;
 
         // Check if the spaceship collided with an asteroid
-        if (other.gameObject.CompareTag("Asteroid"))
+        if (other.CompareTag("Asteroid") && !isExploding)
         {
-            // Call the ExplodeAndRespawn method
+            // Instantiate the spaceship explosion effect
+            ParticleSystem explosionInstance = Instantiate(spaceshipExplosionEffectPrefab, transform.position, Quaternion.identity);
+            explosionInstance.Play();
+            // Set the StopAction to automatically destroy the explosion instance after playing
+            var mainModule = explosionInstance.main;
+            mainModule.stopAction = ParticleSystemStopAction.Destroy;
+
             StartCoroutine(ExplodeAndRespawn());
         }
     }
@@ -126,8 +139,9 @@ public class Spaceship : MonoBehaviour
         spaceshipCollider.enabled = false; // Disable the collider
 
         // Play the explosion effect
-        explosionEffect.transform.position = transform.position; // Set the position to match the player's ship
-        explosionEffect.Play();
+        //explosionEffect.transform.position = transform.position; // Set the position to match the player's ship
+        //explosionEffect.Play();
+        spaceshipExplosionEffectPrefab.Play();
 
         // Call the LoseLife method from the GameManager script
         gameManager.LoseLife();
@@ -142,7 +156,8 @@ public class Spaceship : MonoBehaviour
         }
 
         // Stop the explosion effect
-        explosionEffect.Stop();
+        //explosionEffect.Stop();
+        spaceshipExplosionEffectPrefab.Stop();
 
         // Set the player's velocity to 0
         rb.velocity = Vector2.zero;

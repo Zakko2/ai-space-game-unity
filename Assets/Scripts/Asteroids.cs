@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class Asteroids : MonoBehaviour
 {
     public int numberOfAsteroids = 10;
+    private int startingNumberOfAsteroids; // Add a variable to store the starting number of asteroids
     public float asteroidSize = 100f;
     public float asteroidSpeed = 50f;
     public int asteroidVertices = 10;
@@ -16,12 +17,15 @@ public class Asteroids : MonoBehaviour
     public GameObject explosionEffectPrefab;
     public List<GameObject> asteroids;
     public Dictionary<GameObject, Vector2> asteroidVelocities; // Replace the List<GameObject> and List<Vector2>
+    public int maxNumberOfAsteroids = 50; // Set a maximum limit on the number of asteroids
 
     private int additionalAsteroids = 0;
+    private bool respawningAsteroids = false; // Add a flag to track respawning
 
     void Start()
     {
-        asteroidVelocities = new Dictionary<GameObject, Vector2>(); // Initialize the dictionary
+        asteroidVelocities = new Dictionary<GameObject, Vector2>();
+        startingNumberOfAsteroids = numberOfAsteroids; // Store the initial value set in the Unity UI
         CreateAsteroidBelt();
         Debug.Log("Ran start routine");
     }
@@ -40,13 +44,12 @@ public class Asteroids : MonoBehaviour
 
         // Call the method to check if all asteroids are destroyed and respawn if needed
         CheckAndRespawnAsteroids();
-
     }
 
     void CheckAndRespawnAsteroids()
     {
         // If there are no active asteroids and there are no asteroids waiting to be removed
-        if (asteroids.Count == 0 && asteroidVelocities.Count == 0)
+        if (asteroids.Count == 0 && asteroidVelocities.Count == 0 && !respawningAsteroids)
         {
             StartCoroutine(RespawnAsteroidsAfterDelay());
         }
@@ -54,17 +57,26 @@ public class Asteroids : MonoBehaviour
 
     IEnumerator RespawnAsteroidsAfterDelay()
     {
+        // Set the respawning flag to true
+        respawningAsteroids = true;
+
         // Wait for 3 seconds
         yield return new WaitForSeconds(3f);
 
-        // Increase the number of asteroids to spawn
+        // Increase the number of additional asteroids to spawn
         additionalAsteroids++;
 
-        // Update the numberOfAsteroids
-        numberOfAsteroids += additionalAsteroids;
+        // Update the numberOfAsteroids based on the starting number and additionalAsteroids
+        numberOfAsteroids = startingNumberOfAsteroids + additionalAsteroids;
+
+        // Apply the limit to the number of asteroids (optional)
+        numberOfAsteroids = Mathf.Min(numberOfAsteroids, maxNumberOfAsteroids);
 
         // Call the CreateAsteroidBelt method to spawn new asteroids
         CreateAsteroidBelt();
+
+        // Set the respawning flag to false
+        respawningAsteroids = false;
     }
 
     void CreateAsteroidBelt()
@@ -306,5 +318,16 @@ public class Asteroids : MonoBehaviour
         CreateAsteroidBelt();
     }
 
-
+    public void RemoveAsteroid(GameObject asteroid)
+    {
+        // Remove the asteroid from the lists and dictionary
+        if (asteroids.Contains(asteroid))
+        {
+            asteroids.Remove(asteroid);
+        }
+        if (asteroidVelocities.ContainsKey(asteroid))
+        {
+            asteroidVelocities.Remove(asteroid);
+        }
+    }
 }
