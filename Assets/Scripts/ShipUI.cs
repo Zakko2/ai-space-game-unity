@@ -9,8 +9,6 @@ public class ShipUI : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("Line Material: " + lineMaterial);
-
         // Get the existing LineRenderer component instead of adding a new one
         LineRenderer lr = GetComponent<LineRenderer>();
 
